@@ -122,8 +122,6 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Ite
         Intent mIntent = new Intent(MainActivity.this,ShowMovie.class);
         mIntent.putExtra(MOVIE,mData.get(movieIndex));
         startActivity(mIntent);
-        Toast.makeText(this, ""+movieIndex, Toast.LENGTH_LONG).show();
-
 
     }
 

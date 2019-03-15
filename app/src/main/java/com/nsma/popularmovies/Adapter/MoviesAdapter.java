@@ -46,6 +46,8 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.ViewHolder
         String poster = NetworkUtils.buildUrlImage(mData.get(i).getPosterPath()).toString();
         Picasso.get()
                 .load(poster)
+                .placeholder(R.mipmap.ic_launcher)
+                .error(R.mipmap.ic_launcher_round)
                 .into(viewHolder.posterImage);
 
 

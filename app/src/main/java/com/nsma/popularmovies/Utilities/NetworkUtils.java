@@ -46,7 +46,9 @@ public class NetworkUtils {
     final static String PARAM_QUERY = "q";
 
     final static String PARAM_API_KEY = "api_key";
-    final static String API_KEY_VALUE = "c5c417664f6d143ead920559744ad7f2";
+
+    // TODO: 15/03/19 YOUR API KEY HERE 
+    final static String API_KEY_VALUE = "YOUR API KEY HERE";
 
 
 
