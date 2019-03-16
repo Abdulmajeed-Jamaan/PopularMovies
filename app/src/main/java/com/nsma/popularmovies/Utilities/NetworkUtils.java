@@ -38,10 +38,9 @@ import java.util.Scanner;
 public class NetworkUtils {
 
     final static String TMDB_BASE_URL =
-            "https://api.themoviedb.org/3/discover/movie";
+            "https://api.themoviedb.org/3/movie/";
 
-    final static String PATH_DISCOVER_MOVIE =
-            "/discover/movie";
+
 
     final static String PARAM_QUERY = "q";
 
@@ -61,8 +60,8 @@ public class NetworkUtils {
 
 
     final static String PARAM_SORT = "sort_by";
-    final static String SORTBY_POPULARITY = "popularity";
-    final static String SORTBY_TOP_RATED = "vote_average";
+    final static String SORTBY_POPULARITY = "popular";
+    final static String SORTBY_TOP_RATED = "top_rated";
 
     final static String ORDER_ASC = ".asc";
     final static String ORDER_DESC = ".desc";
@@ -71,13 +70,8 @@ public class NetworkUtils {
 
 
     public static URL buildUrlDiscoverPopularity() {
-        Uri builtUri = Uri.parse(TMDB_BASE_URL).buildUpon()
+        Uri builtUri = Uri.parse(TMDB_BASE_URL+SORTBY_POPULARITY).buildUpon()
                 .appendQueryParameter(PARAM_API_KEY, API_KEY_VALUE)
-                .appendQueryParameter(PARAM_LANGUAGE, ENGLISH)
-                .appendQueryParameter(PARAM_SORT,SORTBY_POPULARITY+ORDER_DESC)
-                .appendQueryParameter(PARAM_INCLUDE_ADULT,"false")
-                .appendQueryParameter(PARAM_INCLUDE_VIDEO,"false")
-                .appendQueryParameter(PARAM_PAGE,"1")
                 .build();
 
         URL url = null;
@@ -91,13 +85,8 @@ public class NetworkUtils {
     }
 
     public static URL buildUrlDiscoverTopRated() {
-        Uri builtUri = Uri.parse(TMDB_BASE_URL).buildUpon()
+        Uri builtUri = Uri.parse(TMDB_BASE_URL+SORTBY_TOP_RATED).buildUpon()
                 .appendQueryParameter(PARAM_API_KEY, API_KEY_VALUE)
-                .appendQueryParameter(PARAM_LANGUAGE, ENGLISH)
-                .appendQueryParameter(PARAM_SORT,SORTBY_TOP_RATED+ORDER_DESC)
-                .appendQueryParameter(PARAM_INCLUDE_ADULT,"false")
-                .appendQueryParameter(PARAM_INCLUDE_VIDEO,"false")
-                .appendQueryParameter(PARAM_PAGE,"1")
                 .build();
 
         URL url = null;
