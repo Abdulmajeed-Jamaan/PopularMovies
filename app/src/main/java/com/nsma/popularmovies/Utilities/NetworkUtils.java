@@ -16,8 +16,11 @@
 package com.nsma.popularmovies.Utilities;
 
 import android.net.Uri;
+import android.util.Log;
 
 import com.nsma.popularmovies.Models.Movie;
+import com.nsma.popularmovies.Models.Review;
+import com.nsma.popularmovies.Models.Trailer;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -47,7 +50,7 @@ public class NetworkUtils {
     final static String PARAM_API_KEY = "api_key";
 
     // TODO: 15/03/19 YOUR API KEY HERE 
-    final static String API_KEY_VALUE = "YOUR API KEY HERE";
+    final static String API_KEY_VALUE = "c5c417664f6d143ead920559744ad7f2";
 
 
 
@@ -86,6 +89,38 @@ public class NetworkUtils {
 
     public static URL buildUrlDiscoverTopRated() {
         Uri builtUri = Uri.parse(TMDB_BASE_URL+SORTBY_TOP_RATED).buildUpon()
+                .appendQueryParameter(PARAM_API_KEY, API_KEY_VALUE)
+                .build();
+
+        URL url = null;
+        try {
+            url = new URL(builtUri.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        return url;
+    }
+
+
+    public static URL buildUrlGetTrailers(int videoId) {
+        Uri builtUri = Uri.parse(TMDB_BASE_URL+videoId+"/videos").buildUpon()
+                .appendQueryParameter(PARAM_API_KEY, API_KEY_VALUE)
+                .build();
+
+        URL url = null;
+        try {
+            url = new URL(builtUri.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        Log.d("URL", "buildUrlGetTrailers: "+url.toString());
+        return url;
+    }
+
+
+    public static URL buildUrlGetReviews(int videoId) {
+        Uri builtUri = Uri.parse(TMDB_BASE_URL+videoId+"/reviews").buildUpon()
                 .appendQueryParameter(PARAM_API_KEY, API_KEY_VALUE)
                 .build();
 
@@ -147,12 +182,98 @@ public class NetworkUtils {
         return movieObject;
     }
 
+    public static ArrayList<Trailer> parseTrailersJSON(String json) throws JSONException {
+
+        JSONObject movieJSON = new JSONObject(json);
+
+        JSONArray results = movieJSON.getJSONArray("results");
+
+        ArrayList<Trailer> TrailersObject = new ArrayList<>();
+
+
+        for (int i = 0; i < results.length(); i++) {
+
+            TrailersObject.add(parseTrailerJSON(results.get(i).toString()));
+            Log.d("URL", "buildUrlGetTrailers: "+results.get(i).toString());
+
+        }
+
+
+        return TrailersObject;
+    }
+
+
+
+
+    public static Trailer parseTrailerJSON(String json) throws JSONException {
+
+        JSONObject trailerJSON = new JSONObject(json);
+
+        Trailer trailerObject = new Trailer();
+
+        String id = trailerJSON.getString("id");
+        trailerObject.setId(id);
+
+        String key = trailerJSON.getString("key");
+        trailerObject.setKey(key);
+
+        String name = trailerJSON.getString("name");
+        trailerObject.setName(name);
+
+
+        return trailerObject;
+    }
+
+
+    public static ArrayList<Review> parseReviewsJSON(String json) throws JSONException {
+
+        JSONObject movieJSON = new JSONObject(json);
+
+        JSONArray results = movieJSON.getJSONArray("results");
+
+        ArrayList<Review> TrailersObject = new ArrayList<>();
+
+
+        for (int i = 0; i < results.length(); i++) {
+
+            TrailersObject.add(parseReviewJSON(results.get(i).toString()));
+
+        }
+
+
+        return TrailersObject;
+    }
+
+
+
+
+    public static Review parseReviewJSON(String json) throws JSONException {
+
+        JSONObject trailerJSON = new JSONObject(json);
+
+        Review reviewObject = new Review();
+
+        String author = trailerJSON.getString("author");
+        reviewObject.setAuthor(author);
+
+        String content = trailerJSON.getString("content");
+        reviewObject.setContent(content);
+
+
+
+
+        return reviewObject;
+    }
+
 
     public static Movie parseObjectJSON(String json) throws JSONException {
 
         JSONObject movieJSON = new JSONObject(json);
 
         Movie movieObject = new Movie();
+
+        int id = movieJSON.getInt("id");
+        movieObject.setId(id);
 
         int vote_count = movieJSON.getInt("vote_count");
         movieObject.setVoteCount(vote_count);

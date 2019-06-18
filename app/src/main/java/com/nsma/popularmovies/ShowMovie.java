@@ -1,25 +1,62 @@
 package com.nsma.popularmovies;
 
+import android.content.Intent;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.MenuItem;
+import android.widget.Adapter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RatingBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.nsma.popularmovies.Adapter.ReviewsAdapter;
+import com.nsma.popularmovies.Adapter.TrailersAdapter;
 import com.nsma.popularmovies.Models.Movie;
+import com.nsma.popularmovies.Models.Review;
+import com.nsma.popularmovies.Models.Trailer;
 import com.nsma.popularmovies.Utilities.NetworkUtils;
 import com.squareup.picasso.Picasso;
 
+import org.json.JSONException;
+
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 
-public class ShowMovie extends AppCompatActivity {
+public class ShowMovie extends AppCompatActivity implements TrailersAdapter.ItemClickListener {
 
-ImageView poster ;
-TextView title , popularity , realeseDate, overReview ;
-RatingBar mRatingBar;
+    private ImageView poster ;
+    private TextView title , popularity , realeseDate, overReview ;
+    private RatingBar mRatingBar;
+
+    private RecyclerView trailers,reviews;
+    private TrailersAdapter mTrailAdapter;
+    private ReviewsAdapter mReviewAdapter;
+
+    private ArrayList<Trailer> mTrailers;
+    private ArrayList<Review> mReviews;
 
     Movie movie ;
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        int id = item.getItemId();
+
+        if(id == android.R.id.home){
+            onBackPressed();
+        }
+
+        return super.onOptionsItemSelected(item);
+
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,6 +69,9 @@ RatingBar mRatingBar;
         realeseDate = findViewById(R.id.release_date);
         overReview = findViewById(R.id.over_review);
         mRatingBar = findViewById(R.id.rating);
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeButtonEnabled(true);
 
 
 
@@ -59,10 +99,134 @@ RatingBar mRatingBar;
         overReview.setText(movie.getOverview());
         realeseDate.setText(movie.getRelease_date());
 
+        trailers = findViewById(R.id.tailer_recycler);
+        reviews = findViewById(R.id.review_recycler);
+
+        trailers.setLayoutManager(new LinearLayoutManager(this));
+        reviews.setLayoutManager(new LinearLayoutManager(this));
+
+
+
+        mTrailers = new ArrayList<>();
+        mTrailAdapter = new TrailersAdapter(this,mTrailers);
+        trailers.setAdapter(mTrailAdapter);
+
+        mReviews = new ArrayList<>();
+        mReviewAdapter = new ReviewsAdapter(this,mReviews);
+        reviews.setAdapter(mReviewAdapter);
+
+
+        mTrailAdapter.setClickListener(this);
+
+
+        URL requestTrailers = NetworkUtils.buildUrlGetTrailers(movie.getId());
+        new TMDBQueryTaskTrails().execute(requestTrailers);
+
+        URL requestReviews = NetworkUtils.buildUrlGetReviews(movie.getId());
+        new TMDBQueryTaskReviews().execute(requestReviews);
+
+
+
+
+    }
+
+    @Override
+    public void onItemClick(int movieIndex) {
+
+
+        Intent intent = new Intent(Intent.ACTION_VIEW,
+                Uri.parse("http://www.youtube.com/watch?v=" + mTrailers.get(movieIndex).getKey()));
+        startActivity(intent);
+
     }
 
 
+    public class TMDBQueryTaskReviews extends AsyncTask<URL, Void, String> {
 
+        // COMPLETED (2) Override the doInBackground method to perform the query. Return the results. (Hint: You've already written the code to perform the query)
+        @Override
+        protected String doInBackground(URL... params) {
+            URL searchUrl = params[0];
+            String theMovieDBResult = null;
+            try {
+                theMovieDBResult = NetworkUtils.getResponseFromHttpUrl(searchUrl);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return theMovieDBResult;
+        }
+
+        // COMPLETED (3) Override onPostExecute to display the results in the TextView
+        @Override
+        protected void onPostExecute(String theMovieDBResult) {
+
+            ArrayList<Review> movies = new ArrayList<>();
+            if (theMovieDBResult != null && !theMovieDBResult.equals("")) {
+
+                try {
+                    movies = NetworkUtils.parseReviewsJSON(theMovieDBResult);
+
+
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+
+                }
+
+
+                mReviews = movies;
+
+                mReviewAdapter.setMoviesArray(mReviews);
+                mReviewAdapter.notifyDataSetChanged();
+
+            }else{
+                Toast.makeText(ShowMovie.this,"Some Error Happen",Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+
+    public class TMDBQueryTaskTrails extends AsyncTask<URL, Void, String> {
+
+        // COMPLETED (2) Override the doInBackground method to perform the query. Return the results. (Hint: You've already written the code to perform the query)
+        @Override
+        protected String doInBackground(URL... params) {
+            URL searchUrl = params[0];
+            String theMovieDBResult = null;
+            try {
+                theMovieDBResult = NetworkUtils.getResponseFromHttpUrl(searchUrl);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return theMovieDBResult;
+        }
+
+        // COMPLETED (3) Override onPostExecute to display the results in the TextView
+        @Override
+        protected void onPostExecute(String theMovieDBResult) {
+
+            ArrayList<Trailer> movies = new ArrayList<>();
+            if (theMovieDBResult != null && !theMovieDBResult.equals("")) {
+
+                try {
+                    movies = NetworkUtils.parseTrailersJSON(theMovieDBResult);
+
+
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                mTrailers = movies;
+
+                mTrailAdapter.setMoviesArray(mTrailers);
+                mTrailAdapter.notifyDataSetChanged();
+
+            }else{
+                Toast.makeText(ShowMovie.this,"Some Error Happen",Toast.LENGTH_LONG).show();
+            }
+        }
+    }
 
 
 

@@ -1,10 +1,16 @@
 package com.nsma.popularmovies.Models;
 
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.PrimaryKey;
+
 import java.io.Serializable;
 
+@Entity(tableName = "movies")
 public class Movie implements Serializable {
 
 
+    @PrimaryKey(autoGenerate = true)
+    int id;
     private int voteCount ;
     private Double voteAVG ;
     private Double popularity ;
@@ -16,6 +22,14 @@ public class Movie implements Serializable {
     public Movie() {
     }
 
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
     public Movie(int voteCount, Double voteAVG, Double popularity, String title, String posterPath, String overview, String release_date) {
         this.voteCount = voteCount;
         this.voteAVG = voteAVG;

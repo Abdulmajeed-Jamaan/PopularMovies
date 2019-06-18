@@ -3,56 +3,50 @@ package com.nsma.popularmovies.Adapter;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.nsma.popularmovies.Models.Movie;
+import com.nsma.popularmovies.Models.Trailer;
 import com.nsma.popularmovies.R;
 import com.nsma.popularmovies.Utilities.NetworkUtils;
-import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
-public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.ViewHolder>{
+public class TrailersAdapter extends RecyclerView.Adapter<TrailersAdapter.ViewHolder>{
 
-    private ArrayList<Movie> mData;
+    private ArrayList<Trailer> mData;
     private Context mContext;
     private ItemClickListener mClickListener;
 
 
-    public MoviesAdapter(Context mContext ,ArrayList<Movie> mData) {
+    public TrailersAdapter(Context mContext , ArrayList<Trailer> mData) {
 
         this.mContext = mContext;
         this.mData = mData;
+
     }
 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
-        View view = LayoutInflater.from(mContext).inflate(R.layout.grid_movie_item, viewGroup, false);
+        View view = LayoutInflater.from(mContext).inflate(R.layout.recycler_trailers_item, viewGroup, false);
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int i) {
 
-        String poster = NetworkUtils.buildUrlImage(mData.get(i).getPosterPath()).toString();
-        Picasso.get()
-                .load(poster)
-                .error(R.mipmap.ic_launcher_round)
-                .into(viewHolder.posterImage);
 
 
-        viewHolder.title.setText(mData.get(i).getTitle());
-        viewHolder.popularity.setText(mData.get(i).getPopularity()+"");
-        viewHolder.stars.setRating((float)(mData.get(i).getVoteAVG()/2));
+
+        viewHolder.title.setText(mData.get(i).getName());
+
 
 
 
@@ -66,9 +60,7 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.ViewHolder
 
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
-        ImageView posterImage;
-        TextView title , popularity;
-        RatingBar stars ;
+        TextView title ;
 
 
         public ViewHolder(@NonNull View itemView) {
@@ -76,14 +68,9 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.ViewHolder
 
             itemView.setOnClickListener(this);
 
-            posterImage = itemView.findViewById(R.id.poster_image);
 
-            title = itemView.findViewById(R.id.title);
+            title = itemView.findViewById(R.id.label_trailer);
 
-            popularity = itemView.findViewById(R.id.popularity);
-
-            stars = itemView.findViewById(R.id.rating);
-            stars.setNumStars(5);
 
         }
 
@@ -106,7 +93,7 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.ViewHolder
         this.mClickListener = itemClickListener;
     }
 
-    public void setMoviesArray(ArrayList<Movie> array) {
+    public void setMoviesArray(ArrayList<Trailer> array) {
         this.mData = array;
     }
 }
