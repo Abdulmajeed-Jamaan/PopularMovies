@@ -18,6 +18,7 @@ package com.nsma.popularmovies.Utilities;
 import android.net.Uri;
 import android.util.Log;
 
+import com.nsma.popularmovies.BuildConfig;
 import com.nsma.popularmovies.Models.Movie;
 import com.nsma.popularmovies.Models.Review;
 import com.nsma.popularmovies.Models.Trailer;
@@ -50,7 +51,7 @@ public class NetworkUtils {
     final static String PARAM_API_KEY = "api_key";
 
     // TODO: 15/03/19 YOUR API KEY HERE 
-    final static String API_KEY_VALUE = "Your API Key Here";
+    final static String API_KEY_VALUE = BuildConfig.API_KEY;
 
 
 
