@@ -37,6 +37,35 @@ public class Movie implements Serializable , Parcelable {
         this.overview = overview;
         this.release_date = release_date;
     }
+
+    @Ignore
+    protected Movie(Parcel in) {
+        id = in.readInt();
+        voteCount = in.readInt();
+        voteAVG = in.readDouble();
+
+        popularity = in.readDouble();
+
+        title = in.readString();
+        posterPath = in.readString();
+        overview = in.readString();
+        release_date = in.readString();
+    }
+
+    public static final Creator<Movie> CREATOR = new Creator<Movie>() {
+        @Override
+        public Movie createFromParcel(Parcel in) {
+            return new Movie(in);
+        }
+
+        @Override
+        public Movie[] newArray(int size) {
+            return new Movie[size];
+        }
+    };
+
+
+
     public int getId() {
         return id;
     }
