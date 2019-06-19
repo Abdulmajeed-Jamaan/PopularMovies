@@ -1,12 +1,15 @@
 package com.nsma.popularmovies.Models;
 
 import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.PrimaryKey;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 import java.io.Serializable;
 
 @Entity(tableName = "movies")
-public class Movie implements Serializable {
+public class Movie implements Serializable , Parcelable {
 
 
     @PrimaryKey(autoGenerate = true)
@@ -23,13 +26,8 @@ public class Movie implements Serializable {
     }
 
 
-    public int getId() {
-        return id;
-    }
 
-    public void setId(int id) {
-        this.id = id;
-    }
+    @Ignore
     public Movie(int voteCount, Double voteAVG, Double popularity, String title, String posterPath, String overview, String release_date) {
         this.voteCount = voteCount;
         this.voteAVG = voteAVG;
@@ -39,7 +37,13 @@ public class Movie implements Serializable {
         this.overview = overview;
         this.release_date = release_date;
     }
+    public int getId() {
+        return id;
+    }
 
+    public void setId(int id) {
+        this.id = id;
+    }
     public int getVoteCount() {
         return voteCount;
     }
@@ -107,5 +111,24 @@ public class Movie implements Serializable {
                 ", overview='" + overview + '\'' +
                 ", release_date='" + release_date + '\'' +
                 '}';
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+
+        dest.writeInt(id);
+        dest.writeInt(voteCount);
+        dest.writeDouble(voteAVG);
+        dest.writeDouble(popularity);
+        dest.writeString(title);
+        dest.writeString(posterPath);
+        dest.writeString(overview);
+        dest.writeString(release_date);
+
     }
 }

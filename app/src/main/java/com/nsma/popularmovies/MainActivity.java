@@ -1,11 +1,15 @@
 package com.nsma.popularmovies;
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.animation.Animation;
@@ -14,22 +18,39 @@ import android.widget.Toast;
 import com.nsma.popularmovies.Adapter.MoviesAdapter;
 import com.nsma.popularmovies.Models.Movie;
 import com.nsma.popularmovies.Utilities.NetworkUtils;
+import com.nsma.popularmovies.ViewModels.FavoritesViewModel;
 
 import org.json.JSONException;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements MoviesAdapter.ItemClickListener{
 
 
 
     final static String MOVIE = "movie";
+    final static String TITLE = "title";
+    final String TAG = MainActivity.class.getSimpleName();
+    private String moviesJson;
 
     RecyclerView mRecyclerView;
     MoviesAdapter moviesAdapter;
     ArrayList<Movie> mData ;
+
+    FavoritesViewModel viewModel ;
+
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putParcelableArrayList(MOVIE,mData);
+        outState.putString(TITLE,getTitle().toString());
+        super.onSaveInstanceState(outState);
+
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,17 +59,33 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Ite
 
         mRecyclerView = findViewById(R.id.recycler);
 
-        mData= new ArrayList<>();
+        mData = new ArrayList<>();
 
-        if (getIntent().hasExtra(SplashScreen.MOVIES)) {
+        if (savedInstanceState != null) {
 
-            mData = (ArrayList<Movie>) getIntent().getSerializableExtra(SplashScreen.MOVIES);
+             mData = savedInstanceState.getParcelableArrayList(MOVIE);
+             setTitle(savedInstanceState.getString(TITLE));
 
-        }else{
+            Log.d(TAG, "onCreate ==== : " + moviesJson);
+
+
+        } else{
+
+            if (getIntent().hasExtra(SplashScreen.MOVIES)) {
+                moviesJson = getIntent().getStringExtra(SplashScreen.MOVIES);
+            try {
+                mData = NetworkUtils.parseMovieJSON(moviesJson);
+                Log.d(TAG, "onCreate: " + mData.toString());
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+        } else {
             finish();
         }
 
-
+    }
 
 
         moviesAdapter = new MoviesAdapter(this,mData);
@@ -58,7 +95,7 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Ite
 
         mRecyclerView.setAdapter(moviesAdapter);
 
-
+        viewModel = ViewModelProviders.of(this).get(FavoritesViewModel.class);
 
 
 
@@ -71,9 +108,34 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Ite
         moviesAdapter.notifyDataSetChanged();
         setTitle(R.string.most_popular);
 
+        viewModel.getMovies().removeObservers(this);
+
         URL request = NetworkUtils.buildUrlDiscoverPopularity();
         new TMDBQueryTask().execute(request);
 
+    }
+
+
+    private void setupViewModel() {
+        setTitle("My Favorites");
+        mData.clear();
+        viewModel.getMovies().observe(this, new Observer<List<Movie>>() {
+            @Override
+            public void onChanged(@Nullable List<Movie> taskEntries) {
+                Log.d(TAG, "Updating list of tasks from LiveData in ViewModel");
+                ArrayList<Movie> list = new ArrayList<>(taskEntries.size());
+                list.addAll(taskEntries);
+
+                mData = list;
+                moviesAdapter.setMoviesArray(mData);
+                moviesAdapter.notifyDataSetChanged();
+
+                if (mData.isEmpty()) {
+                    Toast.makeText(MainActivity.this,"You don't have any favorites",Toast.LENGTH_LONG).show();
+                }
+
+            }
+        });
     }
 
     public void sortByTopRated(){
@@ -81,6 +143,7 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Ite
         mData.clear();
         moviesAdapter.notifyDataSetChanged();
         setTitle(R.string.top_rated);
+        viewModel.getMovies().removeObservers(this);
 
 
 
@@ -111,6 +174,10 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Ite
             case R.id.top_rated:
                 sortByTopRated();
                 break;
+
+            case R.id.favorites:
+                setupViewModel();
+                break;
         }
 
         return super.onOptionsItemSelected(item);
@@ -120,7 +187,7 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Ite
     public void onItemClick(int movieIndex) {
 
         Intent mIntent = new Intent(MainActivity.this,ShowMovie.class);
-        mIntent.putExtra(MOVIE,mData.get(movieIndex));
+        mIntent.putExtra(MOVIE, (Serializable) mData.get(movieIndex));
         startActivity(mIntent);
 
     }
@@ -149,6 +216,7 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Ite
             if (theMovieDBResult != null && !theMovieDBResult.equals("")) {
 
                 try {
+                    moviesJson = theMovieDBResult;
                     movies = NetworkUtils.parseMovieJSON(theMovieDBResult);
 
 

@@ -71,19 +71,12 @@ public class SplashScreen extends AppCompatActivity {
         @Override
         protected void onPostExecute(String theMovieDBResult) {
 
-            ArrayList<Movie> movies = new ArrayList<>();
+            final String movies ;
             if (theMovieDBResult != null && !theMovieDBResult.equals("")) {
 
-                try {
-                  movies = NetworkUtils.parseMovieJSON(theMovieDBResult);
+                  movies = theMovieDBResult;
 
 
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-                final ArrayList<Movie> finalMovies = movies;
                 fade.setAnimationListener(new Animation.AnimationListener() {
                     @Override
                     public void onAnimationStart(Animation animation) {
@@ -94,7 +87,7 @@ public class SplashScreen extends AppCompatActivity {
                     public void onAnimationEnd(Animation animation) {
 
                         Intent mIntent = new Intent(SplashScreen.this,MainActivity.class);
-                        mIntent.putExtra(MOVIES,finalMovies);
+                        mIntent.putExtra(MOVIES,movies);
                         startActivity(mIntent);
                         finish();
                     }

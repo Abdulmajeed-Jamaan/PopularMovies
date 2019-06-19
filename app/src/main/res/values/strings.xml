@@ -3,4 +3,5 @@
     <string name="tmdb">This product uses the TMDb API \n but is not endorsed or certified by TMDb.</string>
     <string name="most_popular">Most Popular</string>
     <string name="top_rated">Top Rated</string>
+    <string name="favorites">My Favorites</string>
 </resources>

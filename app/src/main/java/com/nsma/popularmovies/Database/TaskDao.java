@@ -17,13 +17,16 @@ import java.util.List;
 public interface TaskDao {
 
     @Query("SELECT * FROM movies ORDER BY id")
-    ArrayList<Movie> loadAllFavorates();
+    LiveData<List<Movie>> loadAllFavorates();
 
     @Insert
     void insertMovie(Movie movieEntry);
 
     @Delete
-    void deleteMovie(Movie taskEntry);
+    void deleteMovie(Movie movieEntry);
+
+    @Query("SELECT * FROM movies WHERE id = :id")
+    Movie getMovie(int id);
 
 
 }

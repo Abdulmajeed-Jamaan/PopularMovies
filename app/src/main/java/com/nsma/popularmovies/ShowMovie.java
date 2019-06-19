@@ -1,6 +1,8 @@
 package com.nsma.popularmovies;
 
 import android.content.Intent;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
@@ -8,7 +10,9 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Adapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RatingBar;
@@ -17,6 +21,7 @@ import android.widget.Toast;
 
 import com.nsma.popularmovies.Adapter.ReviewsAdapter;
 import com.nsma.popularmovies.Adapter.TrailersAdapter;
+import com.nsma.popularmovies.Database.AppDatabase;
 import com.nsma.popularmovies.Models.Movie;
 import com.nsma.popularmovies.Models.Review;
 import com.nsma.popularmovies.Models.Trailer;
@@ -34,6 +39,7 @@ public class ShowMovie extends AppCompatActivity implements TrailersAdapter.Item
     private ImageView poster ;
     private TextView title , popularity , realeseDate, overReview ;
     private RatingBar mRatingBar;
+    private ImageView btnFav ;
 
     private RecyclerView trailers,reviews;
     private TrailersAdapter mTrailAdapter;
@@ -42,7 +48,9 @@ public class ShowMovie extends AppCompatActivity implements TrailersAdapter.Item
     private ArrayList<Trailer> mTrailers;
     private ArrayList<Review> mReviews;
 
-    Movie movie ;
+    private Movie movie ;
+    private AppDatabase mDB;
+    private boolean isItFav = false;
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -69,15 +77,19 @@ public class ShowMovie extends AppCompatActivity implements TrailersAdapter.Item
         realeseDate = findViewById(R.id.release_date);
         overReview = findViewById(R.id.over_review);
         mRatingBar = findViewById(R.id.rating);
+        btnFav = findViewById(R.id.btn_fav);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
 
+        mDB = AppDatabase.getInstance(this);
 
 
         if (getIntent().hasExtra(MainActivity.MOVIE)) {
 
             movie = (Movie) getIntent().getSerializableExtra(MainActivity.MOVIE);
+
+
         }else{
             finish();
 
@@ -85,8 +97,17 @@ public class ShowMovie extends AppCompatActivity implements TrailersAdapter.Item
 
 
 
-        setTitle(movie.getTitle());
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+               Movie mMovie = mDB.taskDao().getMovie(movie.getId());
 
+                if (mMovie != null) {
+                    isItFav = true;
+                    btnFav.setImageResource(R.drawable.ic_star_filled);
+                }
+            }
+        });
 
         String link = NetworkUtils.buildUrlImage(movie.getPosterPath()).toString();
         Picasso.get()
@@ -137,6 +158,32 @@ public class ShowMovie extends AppCompatActivity implements TrailersAdapter.Item
         Intent intent = new Intent(Intent.ACTION_VIEW,
                 Uri.parse("http://www.youtube.com/watch?v=" + mTrailers.get(movieIndex).getKey()));
         startActivity(intent);
+
+    }
+
+    public void addTofav(View view) {
+
+        if (isItFav) {
+            AppExecutors.getInstance().diskIO().execute(new Runnable() {
+                @Override
+                public void run() {
+                    mDB.taskDao().deleteMovie(movie);
+                }
+            });
+            btnFav.setImageResource(R.drawable.ic_star_empty);
+            Toast.makeText(this,"Removed to favorites",Toast.LENGTH_LONG).show();
+
+        }else{
+            AppExecutors.getInstance().diskIO().execute(new Runnable() {
+                @Override
+                public void run() {
+                    mDB.taskDao().insertMovie(movie);
+                }
+            });
+            btnFav.setImageResource(R.drawable.ic_star_filled);
+            Toast.makeText(this,"Added from favorites",Toast.LENGTH_LONG).show();
+
+        }
 
     }
 
